@@ -244,52 +244,18 @@ function App() {
 
   // Default main page (public)
   return (
-    <div
-      className={`App${darkMode ? " dark" : ""}`}
-      style={{ overflowX: "hidden" }}
-    >
-      {/* Floating dark mode toggle */}
-      <button
-        onClick={() => setDarkMode((d) => !d)}
-        style={{
-          position: "fixed",
-          top: 16,
-          right: 16,
-          zIndex: 2000,
-          background: darkMode ? "#232946" : "#fff",
-          color: darkMode ? "#fff" : "#232946",
-          border: "1px solid #6366f1",
-          borderRadius: 20,
-          padding: "6px 18px",
-          fontWeight: 600,
-          fontSize: 15,
-          boxShadow: "0 2px 8px #0002",
-          cursor: "pointer",
-        }}
-        aria-label="Toggle dark mode"
-      >
-        {darkMode ? "☀️ Light" : "🌙 Dark"}
-      </button>
-      <div
-        className="map-driver-container"
-        style={{
-          width: "100vw",
-          maxWidth: "100vw",
-          margin: 0,
-          padding: 0,
-          overflowX: "hidden",
-        }}
-      >
+    <div className={`App${darkMode ? " dark" : ""}`} style={{ overflowX: "hidden" }}>
+      <div className="map-driver-container" style={{ width: "100vw", maxWidth: "100vw", margin: 0, padding: 0, overflowX: "hidden" }}>
         <div
           style={{
             display: "flex",
             justifyContent: "space-between",
             alignItems: "center",
             marginBottom: 16,
-            padding: "0 12px",
+            padding: "0 12px"
           }}
         >
-          <h1 style={{ fontSize: 24, margin: 0 }}>Delivery Map</h1>
+          <h1 style={{ fontSize: 28, margin: 0 }}>Delivery Map</h1>
           <button
             className="btn btn-outline-primary"
             onClick={() => setShowLogin(true)}
@@ -298,7 +264,18 @@ function App() {
             Admin Login
           </button>
         </div>
-        <h2 style={{ textAlign: "center", marginBottom: 24, fontSize: 18 }}>
+        <h2
+          style={{
+            textAlign: "center",
+            marginBottom: 28,
+            fontSize: 28,
+            fontWeight: 700,
+            color: darkMode ? "#fff" : "#232946",
+            textShadow: darkMode ? "0 2px 8px #0008" : "none",
+            letterSpacing: 1,
+            lineHeight: 1.2
+          }}
+        >
           Gate {selectedGate}
         </h2>
         <div
@@ -366,6 +343,34 @@ function App() {
             route={selectedRoute}
           />
         </div>
+      </div>
+      {/* Floating dark mode toggle - now bottom right */}
+      <div style={{
+        position: "fixed",
+        right: 16,
+        bottom: 16,
+        zIndex: 2000,
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "flex-end"
+      }}>
+        <button
+          onClick={() => setDarkMode((d) => !d)}
+          style={{
+            background: darkMode ? "#232946" : "#fff",
+            color: darkMode ? "#fff" : "#232946",
+            border: "1px solid #6366f1",
+            borderRadius: 20,
+            padding: "10px 26px",
+            fontWeight: 700,
+            fontSize: 18,
+            boxShadow: "0 2px 8px #0002",
+            cursor: "pointer",
+          }}
+          aria-label="Toggle dark mode"
+        >
+          {darkMode ? "☀️ Light" : "🌙 Dark"}
+        </button>
       </div>
     </div>
   );
