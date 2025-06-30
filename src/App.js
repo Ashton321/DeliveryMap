@@ -1,25 +1,10 @@
 import React, { useState, useEffect } from "react";
 import "./styles.css";
 import Map from "./components/Map";
+import AdminDashboard from "./components/AdminDashboard";
 import "bootstrap/dist/css/bootstrap.min.css";
 
-const mapOptionsByGate = {
-  1: [
-    { label: "Loading Dock", value: "Example1.png" },
-    { label: "Dropoff Area", value: "Example2.png" },
-    { label: "Stockpile", value: "Example3.png" },
-  ],
-  5: [
-    { label: "Loading Dock", value: "Example4.png" },
-    { label: "Dropoff Area", value: "Example5.png" },
-    { label: "Stockpile", value: "Example6.png" },
-  ],
-  9: [
-    { label: "Loading Dock", value: "Example7.png" },
-    { label: "Dropoff Area", value: "Example8.png" },
-    { label: "Stockpile", value: "Example9.png" },
-  ],
-};
+const LOCAL_STORAGE_KEY = "deliverymap-mapsByGate";
 
 const gateOptions = [
   { label: "Gate 1", value: "1" },
@@ -35,16 +20,64 @@ function getGateFromUrl() {
 function App() {
   const [selectedGate, setSelectedGate] = useState("");
   const [selectedMap, setSelectedMap] = useState("");
-  const [darkMode, setDarkMode] = useState(false);
+  const [darkMode, setDarkMode] = useState(() => {
+    try {
+      const saved = localStorage.getItem("deliverymap-darkmode");
+      return saved === null ? false : saved === "true";
+    } catch {
+      return false;
+    }
+  });
   const [showGateDropdown, setShowGateDropdown] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [showLogin, setShowLogin] = useState(false);
+  const [showCreate, setShowCreate] = useState(false);
+  const [users, setUsers] = useState(() => {
+    const saved = localStorage.getItem("deliverymap-users");
+    return saved
+      ? JSON.parse(saved)
+      : [{ username: "admin", password: "password123" }];
+  });
+
+  // Read gates and routes from localStorage for driver view
+  const gates = (() => {
+    try {
+      const saved = localStorage.getItem("siteGates");
+      return saved ? JSON.parse(saved) : [];
+    } catch {
+      return [];
+    }
+  })();
+  const routes = (() => {
+    try {
+      const saved = localStorage.getItem("siteRoutes");
+      return saved ? JSON.parse(saved) : [];
+    } catch {
+      return [];
+    }
+  })();
+  // Get gate name from selectedGate value
+  const gateObj = gates.find((g) => g.name.endsWith(selectedGate));
+  // Build destination options from routes for this gate
+  const destOptions = routes
+    .filter((r) => r.gate === (gateObj && gateObj.name))
+    .map((r) => ({ label: r.dest, value: r.dest }));
+  // Find the selected route for the selected gate and destination
+  const selectedRoute = routes.find(
+    (r) => r.gate === (gateObj && gateObj.name) && r.dest === selectedMap
+  );
+  // Use the admin-uploaded map if available
+  const siteImage =
+    localStorage.getItem("siteImage") ||
+    process.env.PUBLIC_URL + "/images/Example.png";
 
   useEffect(() => {
-    if (darkMode) {
-      document.body.classList.add("dark");
-    } else {
-      document.body.classList.remove("dark");
-    }
-  }, [darkMode]);
+    document.body.classList.toggle("dark", darkMode);
+    try {
+      localStorage.setItem("deliverymap-darkmode", darkMode);
+      localStorage.setItem("deliverymap-users", JSON.stringify(users));
+    } catch {}
+  }, [darkMode, users]);
 
   useEffect(() => {
     const gateFromUrl = getGateFromUrl();
@@ -53,12 +86,188 @@ function App() {
     } else {
       setSelectedGate("9"); // Default to Gate 9 if not in URL
     }
+    setSelectedMap(""); // Reset map selection when gate changes
   }, []);
 
+  function handleLogin(username, password) {
+    const found = users.find(
+      (u) => u.username === username && u.password === password
+    );
+    if (found) {
+      setIsAdmin(true);
+      setShowLogin(false);
+      setShowCreate(false);
+    } else {
+      return false;
+    }
+    return true;
+  }
+
+  function handleCreateAccount(username, password) {
+    if (!username || !password) return false;
+    if (users.find((u) => u.username === username)) return false;
+    setUsers((prev) => [...prev, { username, password }]);
+    setShowCreate(false);
+    setShowLogin(true);
+    return true;
+  }
+
+  function handleLogout() {
+    setIsAdmin(false);
+    setShowLogin(false);
+    setShowCreate(false);
+  }
+
+  // Login and Create Account forms
+  function LoginForm({ onLogin, onShowCreate, onBack }) {
+    const [username, setUsername] = useState("");
+    const [password, setPassword] = useState("");
+    const [error, setError] = useState("");
+    function handleSubmit(e) {
+      e.preventDefault();
+      if (!onLogin(username, password)) {
+        setError("Invalid credentials");
+      }
+    }
+    return (
+      <div className="container" style={{ maxWidth: 340, marginTop: 60 }}>
+        <h2 style={{ textAlign: "center", marginBottom: 24 }}>Admin Login</h2>
+        <form onSubmit={handleSubmit}>
+          <input
+            className="form-control mb-2"
+            type="text"
+            placeholder="Username"
+            value={username}
+            onChange={(e) => setUsername(e.target.value)}
+          />
+          <input
+            className="form-control mb-2"
+            type="password"
+            placeholder="Password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+          />
+          {error && (
+            <div style={{ color: "#c00", marginBottom: 8 }}>{error}</div>
+          )}
+          <button className="btn btn-primary w-100" type="submit">
+            Login
+          </button>
+        </form>
+        <div style={{ textAlign: "center", marginTop: 12 }}>
+          <button className="btn btn-link" onClick={onShowCreate}>
+            Create Account
+          </button>
+        </div>
+        <div style={{ textAlign: "center", marginTop: 12 }}>
+          <button className="btn btn-outline-secondary w-100" onClick={onBack}>
+            Back
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  function CreateAccountForm({ onCreate, onShowLogin }) {
+    const [username, setUsername] = useState("");
+    const [password, setPassword] = useState("");
+    const [error, setError] = useState("");
+    function handleSubmit(e) {
+      e.preventDefault();
+      if (!onCreate(username, password)) {
+        setError("Username taken or invalid");
+      }
+    }
+    return (
+      <div className="container" style={{ maxWidth: 340, marginTop: 60 }}>
+        <h2 style={{ textAlign: "center", marginBottom: 24 }}>
+          Create Admin Account
+        </h2>
+        <form onSubmit={handleSubmit}>
+          <input
+            className="form-control mb-2"
+            type="text"
+            placeholder="Username"
+            value={username}
+            onChange={(e) => setUsername(e.target.value)}
+          />
+          <input
+            className="form-control mb-2"
+            type="password"
+            placeholder="Password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+          />
+          {error && (
+            <div style={{ color: "#c00", marginBottom: 8 }}>{error}</div>
+          )}
+          <button className="btn btn-success w-100" type="submit">
+            Create Account
+          </button>
+        </form>
+        <div style={{ textAlign: "center", marginTop: 12 }}>
+          <button className="btn btn-link" onClick={onShowLogin}>
+            Back to Login
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  // Main UI
+  if (showLogin) {
+    return (
+      <LoginForm
+        onLogin={handleLogin}
+        onShowCreate={() => {
+          setShowLogin(false);
+          setShowCreate(true);
+        }}
+        onBack={() => setShowLogin(false)}
+      />
+    );
+  }
+  if (showCreate) {
+    return (
+      <CreateAccountForm
+        onCreate={handleCreateAccount}
+        onShowLogin={() => {
+          setShowCreate(false);
+          setShowLogin(true);
+        }}
+      />
+    );
+  }
+  if (isAdmin) {
+    return <AdminDashboard onLogout={handleLogout} />;
+  }
+
+  // Default main page (public)
   return (
     <div className={`App${darkMode ? " dark" : ""}`}>
+      {/* Floating dark mode toggle */}
+      <button
+        onClick={() => setDarkMode((d) => !d)}
+        style={{
+          position: "fixed",
+          top: 16,
+          right: 16,
+          zIndex: 2000,
+          background: darkMode ? "#232946" : "#fff",
+          color: darkMode ? "#fff" : "#232946",
+          border: "1px solid #6366f1",
+          borderRadius: 20,
+          padding: "6px 18px",
+          fontWeight: 600,
+          fontSize: 15,
+          boxShadow: "0 2px 8px #0002",
+          cursor: "pointer",
+        }}
+        aria-label="Toggle dark mode"
+      >
+        {darkMode ? "☀️ Light" : "🌙 Dark"}
+      </button>
       <div className="container">
-        <h1>Gate {selectedGate}</h1>
         <div
           style={{
             display: "flex",
@@ -67,27 +276,17 @@ function App() {
             marginBottom: 16,
           }}
         >
-          <div></div> {/* Empty div to balance flex space */}
-          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-            <span
-              style={{
-                fontSize: 15,
-                color: darkMode ? "#f3f6fa" : "#232946",
-                marginRight: 6,
-              }}
-            >
-              {darkMode ? "Dark Mode" : "Light Mode"}
-            </span>
-            <label className="switch">
-              <input
-                type="checkbox"
-                checked={darkMode}
-                onChange={() => setDarkMode(!darkMode)}
-              />
-              <span className="slider round"></span>
-            </label>
-          </div>
+          <h1>Delivery Map</h1>
+          <button
+            className="btn btn-outline-primary"
+            onClick={() => setShowLogin(true)}
+          >
+            Admin Login
+          </button>
         </div>
+        <h2 style={{ textAlign: "center", marginBottom: 24 }}>
+          Gate {selectedGate}
+        </h2>
         <div style={{ fontSize: 13, textAlign: "right", marginBottom: 6 }}>
           <span
             style={{
@@ -105,7 +304,10 @@ function App() {
               className="form-select mt-2"
               style={{ maxWidth: 140, marginLeft: "auto" }}
               value={selectedGate}
-              onChange={(e) => setSelectedGate(e.target.value)}
+              onChange={(e) => {
+                const newGate = e.target.value;
+                window.location.search = `?gate=${newGate}`;
+              }}
             >
               {gateOptions.map((option) => (
                 <option key={option.value} value={option.value}>
@@ -120,14 +322,18 @@ function App() {
           value={selectedMap}
           onChange={(e) => setSelectedMap(e.target.value)}
         >
-          <option value="">Please select a map</option>
-          {(mapOptionsByGate[selectedGate] || []).map((option) => (
+          <option value="">Please select a destination</option>
+          {destOptions.map((option) => (
             <option key={option.value} value={option.value}>
               {option.label}
             </option>
           ))}
         </select>
-        <Map selectedMap={selectedMap || "Example.png"} />
+        <Map
+          selectedMap={siteImage}
+          siteImage={siteImage}
+          route={selectedRoute}
+        />
       </div>
     </div>
   );
