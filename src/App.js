@@ -244,7 +244,10 @@ function App() {
 
   // Default main page (public)
   return (
-    <div className={`App${darkMode ? " dark" : ""}`}>
+    <div
+      className={`App${darkMode ? " dark" : ""}`}
+      style={{ overflowX: "hidden" }}
+    >
       {/* Floating dark mode toggle */}
       <button
         onClick={() => setDarkMode((d) => !d)}
@@ -267,27 +270,45 @@ function App() {
       >
         {darkMode ? "☀️ Light" : "🌙 Dark"}
       </button>
-      <div className="container">
+      <div
+        className="map-driver-container"
+        style={{
+          width: "100vw",
+          maxWidth: "100vw",
+          margin: 0,
+          padding: 0,
+          overflowX: "hidden",
+        }}
+      >
         <div
           style={{
             display: "flex",
             justifyContent: "space-between",
             alignItems: "center",
             marginBottom: 16,
+            padding: "0 12px",
           }}
         >
-          <h1>Delivery Map</h1>
+          <h1 style={{ fontSize: 24, margin: 0 }}>Delivery Map</h1>
           <button
             className="btn btn-outline-primary"
             onClick={() => setShowLogin(true)}
+            style={{ fontSize: 15, padding: "4px 12px" }}
           >
             Admin Login
           </button>
         </div>
-        <h2 style={{ textAlign: "center", marginBottom: 24 }}>
+        <h2 style={{ textAlign: "center", marginBottom: 24, fontSize: 18 }}>
           Gate {selectedGate}
         </h2>
-        <div style={{ fontSize: 13, textAlign: "right", marginBottom: 6 }}>
+        <div
+          style={{
+            fontSize: 13,
+            textAlign: "right",
+            marginBottom: 6,
+            padding: "0 12px",
+          }}
+        >
           <span
             style={{
               color: "#888",
@@ -321,6 +342,7 @@ function App() {
           className="form-select mb-3"
           value={selectedMap}
           onChange={(e) => setSelectedMap(e.target.value)}
+          style={{ margin: "0 12px" }}
         >
           <option value="">Please select a destination</option>
           {destOptions.map((option) => (
@@ -329,11 +351,21 @@ function App() {
             </option>
           ))}
         </select>
-        <Map
-          selectedMap={siteImage}
-          siteImage={siteImage}
-          route={selectedRoute}
-        />
+        <div
+          style={{
+            width: "100vw",
+            maxWidth: "100vw",
+            overflowX: "hidden",
+            margin: 0,
+            padding: 0,
+          }}
+        >
+          <Map
+            selectedMap={siteImage}
+            siteImage={siteImage}
+            route={selectedRoute}
+          />
+        </div>
       </div>
     </div>
   );

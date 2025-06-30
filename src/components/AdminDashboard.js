@@ -233,14 +233,19 @@ export default function AdminDashboard({ onLogout }) {
     }
   }, [siteImage, routeMapWidth, section]);
 
+  // Responsive: show Driver View button in sidebar on mobile, fixed on desktop
+  const isMobile = typeof window !== "undefined" && window.innerWidth < 700;
+
   return (
     <div className="admin-dashboard">
-      {/* Driver View button at top right */}
-      <div style={{ position: "fixed", top: 18, right: 32, zIndex: 1000 }}>
-        <button className="btn btn-outline-primary" onClick={onLogout}>
-          Driver View
-        </button>
-      </div>
+      {/* Driver View button: fixed on desktop, in sidebar on mobile */}
+      {!isMobile && (
+        <div style={{ position: "fixed", top: 18, right: 32, zIndex: 1000 }}>
+          <button className="btn btn-outline-primary" onClick={onLogout}>
+            Driver View
+          </button>
+        </div>
+      )}
       <aside className="sidebar">
         <div className="sidebar-title">Admin</div>
         {defaultSections.map((s) => (
@@ -248,10 +253,29 @@ export default function AdminDashboard({ onLogout }) {
             key={s.key}
             className={section === s.key ? "active" : ""}
             onClick={() => setSection(s.key)}
+            style={
+              isMobile
+                ? {
+                    fontSize: 13,
+                    padding: "10px 6px",
+                    minWidth: 0,
+                    wordBreak: "break-word",
+                  }
+                : {}
+            }
           >
             {s.label}
           </button>
         ))}
+        {isMobile && (
+          <button
+            className="btn btn-outline-primary"
+            style={{ margin: 8 }}
+            onClick={onLogout}
+          >
+            Driver View
+          </button>
+        )}
         <button className="logout" onClick={onLogout}>
           Logout
         </button>
@@ -279,11 +303,13 @@ export default function AdminDashboard({ onLogout }) {
               <div
                 style={{
                   position: "relative",
-                  display: "inline-block",
+                  display: "block",
                   width: "100vw",
                   maxWidth: 800,
+                  minWidth: 0,
                   height: "auto",
                   minHeight: 200,
+                  overflowX: "auto",
                   border: "none",
                   borderRadius: 0,
                   background: "none",
@@ -360,11 +386,13 @@ export default function AdminDashboard({ onLogout }) {
               <div
                 style={{
                   position: "relative",
-                  display: "inline-block",
+                  display: "block",
                   width: "100vw",
                   maxWidth: 800,
+                  minWidth: 0,
                   height: "auto",
                   minHeight: 200,
+                  overflowX: "auto",
                   border: "none",
                   borderRadius: 0,
                   background: "none",

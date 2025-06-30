@@ -24,9 +24,10 @@ function Map({ selectedMap, siteImage, route }) {
       style={{
         position: "relative",
         display: "block",
-        width: "100%",
-        padding: 0,
+        width: "100vw",
+        maxWidth: "100%",
         margin: 0,
+        padding: 0,
         background: "none",
         border: "none",
         borderRadius: 0,
@@ -39,7 +40,8 @@ function Map({ selectedMap, siteImage, route }) {
         src={src}
         alt="Selected Map"
         style={{
-          width: "100%",
+          width: "100vw",
+          maxWidth: "100%",
           height: "auto",
           display: "block",
           borderRadius: 0,
@@ -62,7 +64,8 @@ function Map({ selectedMap, siteImage, route }) {
             left: 0,
             top: 0,
             pointerEvents: "none",
-            width: "100%",
+            width: "100vw",
+            maxWidth: "100%",
             height: "100%",
           }}
           width={imgWidth}
