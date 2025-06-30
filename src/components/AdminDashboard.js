@@ -274,14 +274,16 @@ export default function AdminDashboard({ onLogout }) {
         {section === "gates" && (
           <div>
             <h2>Manage Gates</h2>
-            {/* Fixed width container, no resize, no extra borders */}
+            {/* Responsive container for mobile */}
             {siteImage ? (
               <div
                 style={{
                   position: "relative",
                   display: "inline-block",
-                  width: 800,
-                  height: 600,
+                  width: "100vw",
+                  maxWidth: 800,
+                  height: "auto",
+                  minHeight: 200,
                   border: "none",
                   borderRadius: 0,
                   background: "none",
@@ -295,8 +297,8 @@ export default function AdminDashboard({ onLogout }) {
                   src={siteImage}
                   alt="Site Map"
                   style={{
-                    width: 800,
-                    height: 600,
+                    width: "100%",
+                    height: "auto",
                     borderRadius: 0,
                     cursor: "crosshair",
                     display: "block",
@@ -306,6 +308,7 @@ export default function AdminDashboard({ onLogout }) {
                     background: "none",
                     margin: 0,
                     padding: 0,
+                    maxWidth: 800,
                   }}
                   onClick={handleImageClick}
                 />
@@ -320,13 +323,13 @@ export default function AdminDashboard({ onLogout }) {
                       background: "#232946",
                       color: "#fff",
                       borderRadius: "50%",
-                      width: 32,
-                      height: 32,
+                      width: 28,
+                      height: 28,
                       display: "flex",
                       alignItems: "center",
                       justifyContent: "center",
                       fontWeight: 700,
-                      fontSize: 15,
+                      fontSize: 13,
                       border: "2px solid #fff",
                       cursor: "pointer",
                     }}
@@ -352,14 +355,16 @@ export default function AdminDashboard({ onLogout }) {
         {section === "routes" && (
           <div>
             <h2>Manage Routes</h2>
-            {/* Fixed width container, no resize, no extra borders */}
+            {/* Responsive container for mobile */}
             {siteImage ? (
               <div
                 style={{
                   position: "relative",
                   display: "inline-block",
-                  width: 800,
-                  height: 600,
+                  width: "100vw",
+                  maxWidth: 800,
+                  height: "auto",
+                  minHeight: 200,
                   border: "none",
                   borderRadius: 0,
                   background: "none",
@@ -373,8 +378,8 @@ export default function AdminDashboard({ onLogout }) {
                   src={siteImage}
                   alt="Site Map"
                   style={{
-                    width: 800,
-                    height: 600,
+                    width: "100%",
+                    height: "auto",
                     borderRadius: 0,
                     cursor: drawing ? "crosshair" : "pointer",
                     display: "block",
@@ -384,6 +389,7 @@ export default function AdminDashboard({ onLogout }) {
                     background: "none",
                     margin: 0,
                     padding: 0,
+                    maxWidth: 800,
                   }}
                   onClick={drawing ? handleRouteMapClick : undefined}
                   onLoad={() =>
@@ -400,15 +406,28 @@ export default function AdminDashboard({ onLogout }) {
                     top: 0,
                     pointerEvents: "none",
                   }}
-                  width={800}
-                  height={600}
+                  width={imageRef.current ? imageRef.current.offsetWidth : 0}
+                  height={imageRef.current ? imageRef.current.offsetHeight : 0}
                 >
                   {/* Draw all routes for all gates */}
                   {routes.map((r, idx) => (
                     <polyline
                       key={idx}
                       points={r.line
-                        .map((p) => `${p.x * 800},${p.y * 600}`)
+                        .map(
+                          (p) =>
+                            `${
+                              p.x *
+                              (imageRef.current
+                                ? imageRef.current.offsetWidth
+                                : 0)
+                            },${
+                              p.y *
+                              (imageRef.current
+                                ? imageRef.current.offsetHeight
+                                : 0)
+                            }`
+                        )
                         .join(" ")}
                       fill="none"
                       stroke="#6366f1"
@@ -422,7 +441,20 @@ export default function AdminDashboard({ onLogout }) {
                   {drawing && currentLine.length > 0 && (
                     <polyline
                       points={currentLine
-                        .map((p) => `${p.x * 800},${p.y * 600}`)
+                        .map(
+                          (p) =>
+                            `${
+                              p.x *
+                              (imageRef.current
+                                ? imageRef.current.offsetWidth
+                                : 0)
+                            },${
+                              p.y *
+                              (imageRef.current
+                                ? imageRef.current.offsetHeight
+                                : 0)
+                            }`
+                        )
                         .join(" ")}
                       fill="none"
                       stroke="#c00"
@@ -445,13 +477,13 @@ export default function AdminDashboard({ onLogout }) {
                         background: isSelected ? "#facc15" : "#6366f1",
                         color: isSelected ? "#232946" : "#fff",
                         borderRadius: "50%",
-                        width: 32,
-                        height: 32,
+                        width: 28,
+                        height: 28,
                         display: "flex",
                         alignItems: "center",
                         justifyContent: "center",
                         fontWeight: 700,
-                        fontSize: 15,
+                        fontSize: 13,
                         border: isSelected
                           ? "3px solid #232946"
                           : "2px solid #fff",
